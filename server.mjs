@@ -56,7 +56,7 @@ function sessionAt(date = new Date()) {
 async function fetchJson(url) {
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'Stocklana/0.1 (+https://github.com/ProjectB59/stocklana)',
+      'User-Agent': 'StockGap/0.1 (+https://github.com/ProjectB59/stockgap)',
       'Accept': 'application/json',
     },
     signal: AbortSignal.timeout(8_000),
@@ -236,7 +236,7 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
 
   if (url.pathname === '/api/health') {
-    return sendJson(res, 200, { ok: true, service: 'stocklana', live: true, time: new Date().toISOString() });
+    return sendJson(res, 200, { ok: true, service: 'stockgap', live: true, time: new Date().toISOString() });
   }
 
   if (url.pathname === '/api/markets') {
@@ -252,5 +252,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(port, '0.0.0.0', () => {
-  console.log(`Stocklana ${apiOnly ? 'API' : 'app'} listening on http://localhost:${port}`);
+  console.log(`StockGap ${apiOnly ? 'API' : 'app'} listening on http://localhost:${port}`);
 });

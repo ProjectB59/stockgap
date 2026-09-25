@@ -152,7 +152,7 @@ function Shell({ children, data, error, refresh }: {
   return <div className="min-h-screen bg-background text-foreground">
     <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex max-w-[1380px] flex-wrap items-center gap-3 px-4 py-3">
-        <Link to="/" className="mono text-[15px] font-bold tracking-[0.2em]">STOCK<span className="text-accent">LANA</span></Link>
+        <Link to="/" className="mono text-[15px] font-bold tracking-[0.2em]">STOCK<span className="text-accent">GAP</span></Link>
         <span className="mono inline-flex items-center gap-1.5 border border-ok/40 bg-ok/10 px-2 py-1 text-[9px] tracking-[0.14em] text-ok">
           <span className="h-1.5 w-1.5 rounded-full bg-ok" /> LIVE DATA
         </span>
@@ -174,7 +174,7 @@ function Shell({ children, data, error, refresh }: {
     </header>
     <main className="mx-auto w-full max-w-[1380px] px-3 py-4 sm:px-4">{children}</main>
     <footer className="mx-auto max-w-[1380px] border-t border-border px-4 py-4 mono text-[9px] leading-5 text-muted-foreground">
-      Stocklana is read-only market intelligence. Prices are observational, may be delayed or thinly traded, and are not financial advice.
+      StockGap is read-only market intelligence. Prices are observational, may be delayed or thinly traded, and are not financial advice.
     </footer>
   </div>;
 }
@@ -188,7 +188,7 @@ function Hero() {
         WHEN A TOKENIZED STOCK MOVES,<br /><span className="text-accent">IS THE MARKET AGREEING?</span>
       </h1>
       <p className="mt-4 max-w-3xl text-[13px] leading-6 text-muted-foreground">
-        Stocklana compares a live U.S. equity reference with verified xStock and Ondo representations on Solana, then classifies whether the observed move is aligned, confirmed across wrappers, isolated to one wrapper, or mixed.
+        StockGap compares a live U.S. equity reference with verified xStock and Ondo representations on Solana, then classifies whether the observed move is aligned, confirmed across wrappers, isolated to one wrapper, or mixed.
       </p>
     </div>
   </section>;

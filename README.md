@@ -1,8 +1,8 @@
-# Stocklana
+# StockGap
 
 **Cross-market intelligence for tokenized stocks on Solana.**
 
-Stocklana answers one narrow question:
+StockGap answers one narrow question:
 
 > When a tokenized stock moves, is that move being confirmed across multiple representations of the same equity, or is it isolated to one wrapper?
 
@@ -13,7 +13,7 @@ The app compares a live U.S. equity reference with verified **xStock** and **Ond
 - **DISLOCATION** — the wrapper-to-wrapper spread crosses the configured threshold.
 - **MIXED** — the relationship does not fit the other deterministic states.
 
-Stocklana is read-only. It does not execute trades or make price predictions.
+StockGap is read-only. It does not execute trades or make price predictions.
 
 ## Live end-to-end demo
 
@@ -33,8 +33,8 @@ Thin liquidity is surfaced explicitly. A large observed wrapper spread on a thin
 Requires Node.js 20+.
 
 ```bash
-git clone https://github.com/ProjectB59/stocklana.git
-cd stocklana
+git clone https://github.com/ProjectB59/stockgap.git
+cd stockgap
 npm install
 npm run dev
 ```
@@ -66,7 +66,7 @@ Yahoo Finance chart endpoint
           ├── live U.S. equity reference
           │
           ▼
-      Stocklana API
+      StockGap API
           ▲
           │
           ├── Jupiter Tokens V2
@@ -122,7 +122,7 @@ These are descriptive prototype thresholds, not trading signals.
 
 Tokenized equities trade on crypto rails that can remain active when the traditional reference market is closed. Looking at only one wrapper cannot tell you whether a move reflects broader cross-market repricing or a venue-specific dislocation.
 
-Stocklana puts the reference and multiple tokenized representations on one surface and preserves the context that matters: price, session, verification, liquidity, volume, timestamp and contract address.
+StockGap puts the reference and multiple tokenized representations on one surface and preserves the context that matters: price, session, verification, liquidity, volume, timestamp and contract address.
 
 ## Pyth path
 
@@ -132,11 +132,11 @@ A production extension can replace or augment the current reference layer with a
 
 ## Hackathon disclosure
 
-Stocklana is a standalone hackathon project.
+StockGap is a standalone project built for the Stocklana hackathon.
 
 **Pre-existing work:** the visual language and an earlier mock-only stock comparison concept were adapted from the broader Signal59 project.
 
-**Work completed for Stocklana:** the standalone repository, live server-side data pipeline, verified Solana token registry, deterministic cross-market engine, liquidity-aware warnings, live monitor, dislocation ranking, asset detail view, and copyable market receipt.
+**Work completed for StockGap:** the standalone repository, live server-side data pipeline, verified Solana token registry, deterministic cross-market engine, liquidity-aware warnings, live monitor, dislocation ranking, asset detail view, and copyable market receipt.
 
 No private credentials are committed to this repository.
 
@@ -144,6 +144,6 @@ No private credentials are committed to this repository.
 
 - Traditional reference: Yahoo Finance chart endpoint.
 - Solana token market data: Jupiter Tokens V2.
-- Wrapper tokens may have very different liquidity. Stocklana displays liquidity and warnings rather than hiding this.
+- Wrapper tokens may have very different liquidity. StockGap displays liquidity and warnings rather than hiding this.
 - Source prices can be delayed, stale, thin or temporarily unavailable.
 - This project is experimental market intelligence, not financial advice.
