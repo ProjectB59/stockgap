@@ -12,6 +12,8 @@ type ReferenceQuote = {
   updatedAt: string | null;
   source: string;
   sourceUrl: string;
+  pythFeedId?: string;
+  pythSymbol?: string;
 };
 
 type WrapperQuote = {
@@ -27,6 +29,10 @@ type WrapperQuote = {
   updatedAt: string | null;
   source: string;
   sourceUrl: string;
+  priceSource?: string;
+  marketDataSource?: string | null;
+  pythFeedId?: string;
+  pythSymbol?: string;
 };
 
 type MarketAsset = {
@@ -49,6 +55,10 @@ type MarketPayload = {
   fetchedAt: string;
   refreshSeconds: number;
   assets: MarketAsset[];
+  providers?: {
+    pythConfigured: boolean;
+    pythActiveFeeds: number;
+  };
   methodology: {
     reference: string;
     wrappers: string;
@@ -157,7 +167,9 @@ function Shell({ children, data, error, refresh }: {
           <span className="h-1.5 w-1.5 rounded-full bg-ok" /> LIVE DATA
         </span>
         <span className="mono hidden text-[9px] text-muted-foreground sm:inline">
-          Yahoo reference · Jupiter verified Solana tokens
+          {data?.providers?.pythActiveFeeds
+            ? <>PYTH LIVE {data.providers.pythActiveFeeds}/15 FEEDS · JUPITER MARKET CONTEXT</>
+            : <>PYTH PROVIDER READY · FALLBACK DATA ACTIVE</>}
         </span>
         <nav className="mono ml-auto flex gap-1 text-[9px] tracking-[0.12em]">
           <Link to="/" className="border border-border px-2 py-1.5 text-muted-foreground hover:border-accent hover:text-accent">MONITOR</Link>
@@ -323,9 +335,9 @@ function Detail({ data }: { data: MarketPayload | null }) {
 
       <Panel title="LIVE SOURCE RECEIPT" right={<button onClick={() => void copyReceipt()} className="mono border border-border-bright px-2 py-1 text-[8.5px] text-muted-foreground hover:border-accent hover:text-accent">{copied ? 'COPIED' : 'COPY JSON'}</button>}>
         <div className="space-y-4 text-[10px]">
-          <div><div className="label-xs">Traditional reference</div><div className="mono mt-1">{asset.reference?.source}</div><div className="mono mt-1 text-muted-foreground">{asset.reference?.updatedAt ?? 'N/A'}</div></div>
-          <div><div className="label-xs">xStock · verified {asset.xstock?.verified ? 'yes' : 'no'}</div><div className="mono mt-1 break-all text-foreground">{asset.xstock?.mint}</div><div className="mono mt-1 text-muted-foreground">Liquidity {compactMoney(asset.xstock?.liquidity)} · 24h volume {compactMoney(asset.xstock?.volume24h)}</div></div>
-          <div><div className="label-xs">Ondo · verified {asset.ondo?.verified ? 'yes' : 'no'}</div><div className="mono mt-1 break-all text-foreground">{asset.ondo?.mint}</div><div className="mono mt-1 text-muted-foreground">Liquidity {compactMoney(asset.ondo?.liquidity)} · 24h volume {compactMoney(asset.ondo?.volume24h)}</div></div>
+          <div><div className="label-xs">Traditional reference</div><div className="mono mt-1">{asset.reference?.source}</div>{asset.reference?.pythSymbol && <div className="mono mt-1 text-accent">{asset.reference.pythSymbol}</div>}<div className="mono mt-1 text-muted-foreground">{asset.reference?.updatedAt ?? 'N/A'}</div></div>
+          <div><div className="label-xs">xStock · verified {asset.xstock?.verified ? 'yes' : 'no'}</div><div className="mono mt-1 break-all text-foreground">{asset.xstock?.mint}</div><div className="mono mt-1 text-muted-foreground">Price {asset.xstock?.priceSource ?? asset.xstock?.source} · Market context {asset.xstock?.marketDataSource ?? asset.xstock?.source}</div>{asset.xstock?.pythSymbol && <div className="mono mt-1 text-accent">{asset.xstock.pythSymbol}</div>}<div className="mono mt-1 text-muted-foreground">Liquidity {compactMoney(asset.xstock?.liquidity)} · 24h volume {compactMoney(asset.xstock?.volume24h)}</div></div>
+          <div><div className="label-xs">Ondo · verified {asset.ondo?.verified ? 'yes' : 'no'}</div><div className="mono mt-1 break-all text-foreground">{asset.ondo?.mint}</div><div className="mono mt-1 text-muted-foreground">Price {asset.ondo?.priceSource ?? asset.ondo?.source} · Market context {asset.ondo?.marketDataSource ?? asset.ondo?.source}</div>{asset.ondo?.pythSymbol && <div className="mono mt-1 text-accent">{asset.ondo.pythSymbol}</div>}<div className="mono mt-1 text-muted-foreground">Liquidity {compactMoney(asset.ondo?.liquidity)} · 24h volume {compactMoney(asset.ondo?.volume24h)}</div></div>
         </div>
       </Panel>
     </div>

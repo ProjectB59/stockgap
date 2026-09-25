@@ -5,30 +5,58 @@ import { extname, join } from 'node:path';
 const ASSETS = [
   {
     symbol: 'AAPL', name: 'Apple Inc.',
+    pyth: {
+      reference: { symbol: 'Equity.US.AAPL/USD', id: '49f6b65cb1de6b10eaf75e7c03ca029c306d0357e91b5311b175084a5ad55688' },
+      xstock: { symbol: 'Crypto.AAPLX/USD', id: '978e6cc68a119ce066aa830017318563a9ed04ec3a0a6439010fc11296a58675' },
+      ondo: { symbol: 'Crypto.AAPLON/USD', id: 'e6734de88a83d9d2fb33072adab319004700aefd069653aba30ba9e3cac056f2' },
+    },
     xstock: { symbol: 'AAPLx', mint: 'XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp' },
     ondo: { symbol: 'AAPLon', mint: '123mYEnRLM2LLYsJW3K6oyYh8uP1fngj732iG638ondo' },
   },
   {
     symbol: 'NVDA', name: 'NVIDIA Corp.',
+    pyth: {
+      reference: { symbol: 'Equity.US.NVDA/USD', id: 'b1073854ed24cbc755dc527418f52b7d271f6cc967bbf8d8129112b18860a593' },
+      xstock: { symbol: 'Crypto.NVDAX/USD', id: '4244d07890e4610f46bbde67de8f43a4bf8b569eebe904f136b469f148503b7f' },
+      ondo: { symbol: 'Crypto.NVDAON/USD', id: '207ddea2a443d30b7e13a7c88a9e3f106765deb97049afc65a18cede50fffc82' },
+    },
     xstock: { symbol: 'NVDAx', mint: 'Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh' },
     ondo: { symbol: 'NVDAon', mint: 'gEGtLTPNQ7jcg25zTetkbmF7teoDLcrfTnQfmn2ondo' },
   },
   {
     symbol: 'TSLA', name: 'Tesla Inc.',
+    pyth: {
+      reference: { symbol: 'Equity.US.TSLA/USD', id: '16dad506d7db8da01c87581c87ca897a012a153557d4d578c3b9c9e1bc0632f1' },
+      xstock: { symbol: 'Crypto.TSLAX/USD', id: '47a156470288850a440df3a6ce85a55917b813a19bb5b31128a33a986566a362' },
+      ondo: { symbol: 'Crypto.TSLAON/USD', id: 'c09ef687ed07091c047da444f1499f2da52cdc1c085104643ec565a9eb1af514' },
+    },
     xstock: { symbol: 'TSLAx', mint: 'XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB' },
     ondo: { symbol: 'TSLAon', mint: 'KeGv7bsfR4MheC1CkmnAVceoApjrkvBhHYjWb67ondo' },
   },
   {
     symbol: 'GOOGL', name: 'Alphabet Inc. Class A',
+    pyth: {
+      reference: { symbol: 'Equity.US.GOOGL/USD', id: '5a48c03e9b9cb337801073ed9d166817473697efff0d138874e0f6a33d6d5aa6' },
+      xstock: { symbol: 'Crypto.GOOGLX/USD', id: 'b911b0329028cd0283e4259c33809d62942bd2716a58084e5f31d64c00b5424e' },
+      ondo: { symbol: 'Crypto.GOOGLON/USD', id: 'ad79b3487bef87ff8f8ab31c0b779ad08d931fdfa5436f7e92a234bb82bff7e4' },
+    },
     xstock: { symbol: 'GOOGLx', mint: 'XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN' },
     ondo: { symbol: 'GOOGLon', mint: 'bbahNA5vT9WJeYft8tALrH1LXWffjwqVoUbqYa1ondo' },
   },
   {
     symbol: 'MSFT', name: 'Microsoft Corp.',
+    pyth: {
+      reference: { symbol: 'Equity.US.MSFT/USD', id: 'd0ca23c1cc005e004ccf1db5bf76aeb6a49218f43dac3d4b275e92de12ded4d1' },
+      xstock: { symbol: 'Crypto.MSFTX/USD', id: 'bb723a70af731ab56b9a650eb7e8ac22b7bc07ea77f8670bd1fa9a37bf6df3f5' },
+      ondo: { symbol: 'Crypto.MSFTON/USD', id: '29b228e9fd72bbd306bcca3b10c165d8dba5d535ef8d5aab6c6e4bc18912d150' },
+    },
     xstock: { symbol: 'MSFTx', mint: 'XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX' },
     ondo: { symbol: 'MSFTon', mint: 'FRmH6iRkMr33DLG6zVLR7EM4LojBFAuq6NtFzG6ondo' },
   },
 ];
+
+const pythApiKey = process.env.PYTH_PRO_API_KEY || process.env.PYTH_API_KEY || null;
+const pythHermesBase = 'https://pyth.dourolabs.app/hermes';
 
 const apiOnly = process.argv.includes('--api-only');
 const port = Number(apiOnly ? (process.env.API_PORT || 8787) : (process.env.PORT || 4177));
@@ -63,6 +91,48 @@ async function fetchJson(url) {
   });
   if (!response.ok) throw new Error(`${response.status} from ${new URL(url).host}`);
   return response.json();
+}
+
+async function pythQuote(feed) {
+  if (!pythApiKey) throw new Error('Pyth API key not configured');
+
+  const url = pythHermesBase + '/v2/updates/price/latest?ids[]=' + encodeURIComponent(feed.id) + '&parsed=true';
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': 'Bearer ' + pythApiKey,
+      'Accept': 'application/json',
+      'User-Agent': 'StockGap/0.1 (+https://github.com/ProjectB59/stockgap)',
+    },
+    signal: AbortSignal.timeout(8_000),
+  });
+
+  if (!response.ok) {
+    const message = (await response.text()).trim();
+    throw new Error('Pyth ' + response.status + ': ' + (message || 'price unavailable'));
+  }
+
+  const body = await response.json();
+  const record = body?.parsed?.[0];
+  const rawPrice = Number(record?.price?.price);
+  const exponent = Number(record?.price?.expo);
+  if (!Number.isFinite(rawPrice) || !Number.isFinite(exponent)) {
+    throw new Error('Pyth returned no parsed price for ' + feed.symbol);
+  }
+
+  const price = rawPrice * (10 ** exponent);
+  if (!Number.isFinite(price) || price <= 0) {
+    throw new Error('Pyth returned invalid price for ' + feed.symbol);
+  }
+
+  const publishTime = Number(record?.price?.publish_time);
+  return {
+    price,
+    updatedAt: Number.isFinite(publishTime) ? new Date(publishTime * 1000).toISOString() : null,
+    source: 'Pyth Network',
+    sourceUrl: 'https://www.pyth.network/price-feeds',
+    pythFeedId: feed.id,
+    pythSymbol: feed.symbol,
+  };
 }
 
 async function referenceQuote(symbol) {
@@ -153,25 +223,81 @@ async function buildMarketData() {
 
   const marketSession = sessionAt();
   const assets = await Promise.all(ASSETS.map(async (asset) => {
-    const [referenceResult, xResult, ondoResult] = await Promise.all([
+    const [
+      pythReferenceResult,
+      pythXstockResult,
+      pythOndoResult,
+      fallbackReferenceResult,
+      jupiterXstockResult,
+      jupiterOndoResult,
+    ] = await Promise.all([
+      settle(pythQuote(asset.pyth.reference)),
+      settle(pythQuote(asset.pyth.xstock)),
+      settle(pythQuote(asset.pyth.ondo)),
       settle(referenceQuote(asset.symbol)),
       settle(solanaWrapper(asset.xstock, 'xstock')),
       settle(solanaWrapper(asset.ondo, 'ondo')),
     ]);
 
-    const reference = referenceResult.value;
-    const xstock = xResult.value;
-    const ondo = ondoResult.value;
+    const fallbackReference = fallbackReferenceResult.value;
+    const reference = pythReferenceResult.value
+      ? {
+          ...fallbackReference,
+          symbol: asset.symbol,
+          price: pythReferenceResult.value.price,
+          changePct: fallbackReference?.changePct ?? null,
+          currency: 'USD',
+          exchange: fallbackReference?.exchange || 'U.S. equity',
+          updatedAt: pythReferenceResult.value.updatedAt,
+          source: pythReferenceResult.value.source,
+          sourceUrl: pythReferenceResult.value.sourceUrl,
+          pythFeedId: pythReferenceResult.value.pythFeedId,
+          pythSymbol: pythReferenceResult.value.pythSymbol,
+        }
+      : fallbackReference;
+
+    const makeWrapper = (family, definition, pythResult, jupiterResult) => {
+      const market = jupiterResult.value;
+      if (pythResult.value) {
+        return {
+          ...(market || {
+            family,
+            symbol: definition.symbol,
+            mint: definition.mint,
+            name: definition.symbol,
+            liquidity: null,
+            volume24h: null,
+            holders: null,
+            verified: false,
+          }),
+          family,
+          symbol: definition.symbol,
+          mint: definition.mint,
+          price: pythResult.value.price,
+          updatedAt: pythResult.value.updatedAt,
+          source: 'Pyth Network + Jupiter Tokens V2',
+          sourceUrl: pythResult.value.sourceUrl,
+          priceSource: 'Pyth Network',
+          marketDataSource: market ? 'Jupiter Tokens V2' : null,
+          pythFeedId: pythResult.value.pythFeedId,
+          pythSymbol: pythResult.value.pythSymbol,
+        };
+      }
+      return market ? { ...market, priceSource: 'Jupiter Tokens V2', marketDataSource: 'Jupiter Tokens V2' } : null;
+    };
+
+    const xstock = makeWrapper('xstock', asset.xstock, pythXstockResult, jupiterXstockResult);
+    const ondo = makeWrapper('ondo', asset.ondo, pythOndoResult, jupiterOndoResult);
     const metrics = compute(reference, xstock, ondo);
     const warnings = [];
 
-    if (referenceResult.error) warnings.push(referenceResult.error);
-    if (xResult.error) warnings.push(xResult.error);
-    if (ondoResult.error) warnings.push(ondoResult.error);
-    if (xstock && xstock.verified !== true) warnings.push(`${xstock.symbol} is not verified by Jupiter`);
-    if (ondo && ondo.verified !== true) warnings.push(`${ondo.symbol} is not verified by Jupiter`);
-    if (xstock?.liquidity !== null && xstock?.liquidity < 10_000) warnings.push(`${xstock.symbol} has thin observed liquidity`);
-    if (ondo?.liquidity !== null && ondo?.liquidity < 10_000) warnings.push(`${ondo.symbol} has thin observed liquidity`);
+    if (!reference && fallbackReferenceResult.error) warnings.push(fallbackReferenceResult.error);
+    if (!xstock && jupiterXstockResult.error) warnings.push(jupiterXstockResult.error);
+    if (!ondo && jupiterOndoResult.error) warnings.push(jupiterOndoResult.error);
+    if (xstock && xstock.verified !== true) warnings.push(xstock.symbol + ' is not verified by Jupiter');
+    if (ondo && ondo.verified !== true) warnings.push(ondo.symbol + ' is not verified by Jupiter');
+    if (xstock?.liquidity !== null && xstock?.liquidity < 10_000) warnings.push(xstock.symbol + ' has thin observed liquidity');
+    if (ondo?.liquidity !== null && ondo?.liquidity < 10_000) warnings.push(ondo.symbol + ' has thin observed liquidity');
 
     return {
       symbol: asset.symbol,
@@ -190,10 +316,17 @@ async function buildMarketData() {
     fetchedAt: new Date().toISOString(),
     refreshSeconds: cacheMs / 1000,
     assets,
+    providers: {
+      pythConfigured: Boolean(pythApiKey),
+      pythActiveFeeds: assets.reduce((count, item) => count
+        + (item.reference?.source === 'Pyth Network' ? 1 : 0)
+        + (item.xstock?.priceSource === 'Pyth Network' ? 1 : 0)
+        + (item.ondo?.priceSource === 'Pyth Network' ? 1 : 0), 0),
+    },
     methodology: {
-      reference: 'Live U.S. equity quote from Yahoo Finance chart endpoint.',
-      wrappers: 'Live verified Solana token price and liquidity from Jupiter Tokens V2.',
-      state: 'Deterministic comparison of traditional reference, xStock and Ondo token prices.',
+      reference: 'Pyth Network is the preferred U.S. equity price source; Yahoo Finance is the fallback reference.',
+      wrappers: 'Pyth Network is the preferred xStock/Ondo price source; Jupiter Tokens V2 supplies fallback prices plus liquidity, volume and verification context.',
+      state: 'Deterministic comparison of the selected traditional reference, xStock and Ondo token prices.',
     },
   };
   cacheAt = Date.now();

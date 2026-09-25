@@ -17,14 +17,18 @@ StockGap is read-only. It does not execute trades or make price predictions.
 
 ## Live end-to-end demo
 
-The default demo uses live data and requires **no private API key**:
+StockGap has a server-side **Pyth-first provider layer**.
 
-1. A Node server fetches the current U.S. equity reference from the Yahoo Finance chart endpoint.
-2. It fetches live Solana token price, liquidity, volume, verification status and update timestamps from Jupiter Tokens V2.
-3. It compares the traditional reference, verified xStock and verified Ondo token.
+When `PYTH_PRO_API_KEY` (or `PYTH_API_KEY`) is configured and entitled to the requested feeds:
+
+1. The Node server requests the exact Pyth equity, xStock and Ondo price feeds through authenticated Pyth Hermes.
+2. Pyth prices become the inputs to the StockGap comparison engine.
+3. Jupiter Tokens V2 supplies Solana liquidity, 24h volume, mint verification and token-market context.
 4. The server calculates signed reference gaps, wrapper spread and cross-market state.
 5. The React frontend refreshes the live comparison every 15 seconds.
-6. Each asset page exposes a copyable JSON market receipt containing the observed prices, timestamps, mints, metrics and data-quality warnings.
+6. Each asset page exposes a copyable JSON market receipt with prices, timestamps, mints, metrics, sources and data-quality warnings.
+
+If no Pyth key is configured, or a key is not entitled to a requested feed, StockGap falls back to Yahoo Finance for the U.S. equity reference and Jupiter for wrapper prices. That fallback keeps the public demo usable without committing a private credential or blanking the monitor when one provider is unavailable.
 
 Thin liquidity is surfaced explicitly. A large observed wrapper spread on a thin market is not treated as equally strong evidence as a spread on deeper liquidity.
 
@@ -38,6 +42,15 @@ cd stockgap
 npm install
 npm run dev
 ```
+
+To enable Pyth pricing, export the API key only in the server environment:
+
+```bash
+export PYTH_PRO_API_KEY="your-key"
+npm run dev
+```
+
+The key is never sent to the browser and must not be committed to GitHub.
 
 Open:
 
@@ -61,17 +74,22 @@ http://localhost:4177
 ## Architecture
 
 ```text
-Yahoo Finance chart endpoint
-          │
-          ├── live U.S. equity reference
+Pyth Network (preferred prices)
+   ├── U.S. equity feed
+   ├── xStock feed
+   └── Ondo feed
           │
           ▼
       StockGap API
           ▲
           │
           ├── Jupiter Tokens V2
-          │      ├── verified xStock
-          │      └── verified Ondo token
+          │      ├── liquidity / 24h volume
+          │      ├── verified Solana mints
+          │      └── fallback wrapper prices
+          │
+          └── Yahoo Finance
+                 └── fallback U.S. equity reference
           │
           ▼
  deterministic comparison engine
@@ -85,7 +103,7 @@ Yahoo Finance chart endpoint
        React UI
 ```
 
-The API caches upstream responses for 10 seconds and tolerates partial provider failures so one missing quote does not blank the entire monitor.
+The API caches upstream responses for 10 seconds, keeps Pyth credentials server-side, and tolerates partial provider failures so one missing quote does not blank the entire monitor.
 
 ## Verified Solana assets in the demo
 
@@ -124,11 +142,21 @@ Tokenized equities trade on crypto rails that can remain active when the traditi
 
 StockGap puts the reference and multiple tokenized representations on one surface and preserves the context that matters: price, session, verification, liquidity, volume, timestamp and contract address.
 
-## Pyth path
+## Pyth integration
 
-The earlier research prototype used verified Pyth equity, xStock and Ondo feed definitions. Pyth's current live HTTP products require authenticated server-side access, so the public default demo deliberately does **not** embed a Pyth credential in browser code or GitHub.
+Pyth is integrated as StockGap's preferred price provider behind the server boundary. The repository contains the exact Pyth feed mappings for all monitored markets:
 
-A production extension can replace or augment the current reference layer with authenticated Pyth feeds behind the same server boundary.
+| Equity | Pyth equity | Pyth xStock | Pyth Ondo |
+|---|---|---|---|
+| AAPL | `Equity.US.AAPL/USD` | `Crypto.AAPLX/USD` | `Crypto.AAPLON/USD` |
+| NVDA | `Equity.US.NVDA/USD` | `Crypto.NVDAX/USD` | `Crypto.NVDAON/USD` |
+| TSLA | `Equity.US.TSLA/USD` | `Crypto.TSLAX/USD` | `Crypto.TSLAON/USD` |
+| GOOGL | `Equity.US.GOOGL/USD` | `Crypto.GOOGLX/USD` | `Crypto.GOOGLON/USD` |
+| MSFT | `Equity.US.MSFT/USD` | `Crypto.MSFTX/USD` | `Crypto.MSFTON/USD` |
+
+The server calls authenticated Pyth Hermes with the feed IDs and converts Pyth's fixed-point price representation into the decimal price used by the comparison engine. When Pyth is active, the UI identifies the Pyth source and feed symbol in the live source receipt.
+
+Pyth access is entitlement-aware. If a supplied key does not have access to a requested feed, StockGap keeps running with the fallback providers instead of turning the comparison surface into an error page.
 
 ## Hackathon disclosure
 
@@ -142,8 +170,10 @@ No private credentials are committed to this repository.
 
 ## Data notes
 
-- Traditional reference: Yahoo Finance chart endpoint.
-- Solana token market data: Jupiter Tokens V2.
+- Preferred price source: authenticated Pyth Network feeds when the server key is entitled to the requested feeds.
+- Fallback traditional reference: Yahoo Finance chart endpoint.
+- Solana token liquidity, volume and verification context: Jupiter Tokens V2.
+- Fallback wrapper prices: Jupiter Tokens V2.
 - Wrapper tokens may have very different liquidity. StockGap displays liquidity and warnings rather than hiding this.
 - Source prices can be delayed, stale, thin or temporarily unavailable.
 - This project is experimental market intelligence, not financial advice.
