@@ -1,0 +1,521 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   SIGNAL 59 — visual system
+   A deep-space monitoring station: ink-blue-black substrate, cool-white
+   readouts, one hot signal accent, and a small controlled neon palette used
+   as *signal*, not decoration. 1990s network-ops / cypherpunk DNA, modern
+   instrumentation. All colour is HSL so a single token swap re-themes the
+   whole station. Nothing here changes application behaviour.
+   ========================================================================= */
+
+@layer base {
+  :root {
+    /* --- substrate: deep blue-black ink, never flat --------------------- */
+    --background: 224 42% 5%;
+    --surface-sunk: 226 46% 3%;
+    --panel: 223 32% 8%;
+    --panel-raised: 223 28% 11%;
+    --panel-hi: 222 24% 15%;
+
+    /* --- type: cool white, muted blue-gray ------------------------------ */
+    --foreground: 210 32% 92%;
+    --card: 223 32% 8%;
+    --card-foreground: 210 32% 92%;
+    --popover: 223 30% 9%;
+    --popover-foreground: 210 32% 92%;
+
+    --muted: 222 24% 13%;
+    --muted-foreground: 215 18% 60%;
+
+    /* --- signal accent: hot red-orange — Signal 59 identity + HIGH ------ */
+    --accent: 14 90% 56%;
+    --accent-foreground: 224 42% 5%;
+    --accent-dim: 14 55% 30%;
+
+    --primary: 14 90% 56%;
+    --primary-foreground: 224 42% 5%;
+
+    --secondary: 222 24% 13%;
+    --secondary-foreground: 210 24% 86%;
+
+    --destructive: 4 80% 55%;
+    --destructive-foreground: 210 30% 96%;
+
+    /* --- severity temperatures -------------------------------------------
+       HIGH  hot red-orange   — something is burning
+       WATCH amber-yellow     — keep an eye on it
+       INFO  cold cyan-blue   — logged, not urgent
+       Distinct temperatures, not just distinct hues — readable at a glance. */
+    --sev-high: 8 88% 58%;
+    --sev-watch: 42 95% 55%;
+    --sev-info: 195 85% 62%;
+
+    /* healthy / verified / online */
+    --ok: 100 62% 48%;
+
+    /* electric cyan — live / network / data-in-motion states */
+    --live: 189 92% 55%;
+
+    /* tiny secondary technical accent — used sparingly, never a theme */
+    --tech-magenta: 300 62% 63%;
+
+    /* --- structure -------------------------------------------------------- */
+    --border: 222 26% 16%;
+    --border-bright: 222 26% 25%;
+    --input: 222 26% 18%;
+    --ring: 14 90% 56%;
+
+    --radius: 0.125rem;
+
+    --font-display: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+    --font-body: "IBM Plex Sans", system-ui, sans-serif;
+
+    --grid: 222 30% 11%;
+    --trace: 195 42% 24%;
+
+    /* --- navigation rack ------------------------------------------------ */
+    --sidebar-background: 226 46% 4%;
+    --sidebar-foreground: 213 16% 68%;
+    --sidebar-primary: 14 90% 56%;
+    --sidebar-primary-foreground: 224 42% 5%;
+    --sidebar-accent: 223 26% 9%;
+    --sidebar-accent-foreground: 210 28% 92%;
+    --sidebar-border: 222 24% 12%;
+    --sidebar-ring: 14 90% 56%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-body);
+    font-feature-settings: "cv05", "ss01", "tnum";
+    -webkit-font-smoothing: antialiased;
+    /* faint substrate depth — a cool glow low in the frame, plus a near-
+       invisible scanline grain so large dark areas never read flat/dead. */
+    background-image:
+      radial-gradient(
+        ellipse 120% 80% at 50% -20%,
+        hsl(220 65% 14% / 0.55) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 90% 60% at 100% 100%,
+        hsl(189 60% 12% / 0.35) 0%,
+        transparent 65%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        hsl(0 0% 100% / 0.012) 0px,
+        hsl(0 0% 100% / 0.012) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background-color: hsl(var(--accent) / 0.32);
+    color: hsl(var(--foreground));
+  }
+
+  /* station scrollbars */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--surface-sunk));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border-bright));
+    border: 2px solid hsl(var(--surface-sunk));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--accent-dim));
+  }
+}
+
+@layer components {
+  /* ------------------------------- type ---------------------------------- */
+  .mono {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .label-xs {
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Oversized instrument readout. Used sparingly — counters and key metrics. */
+  .readout {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 0.9;
+  }
+
+  /* Faint phosphor glow — reserved for genuinely live/active text fragments. */
+  .phosphor {
+    text-shadow: 0 0 6px hsl(var(--live) / 0.55);
+  }
+
+  /* ------------------------------ surfaces -------------------------------- */
+  /* Instrument panel: a machined plate, not a floating card.
+     Top hairline highlight + inset shadow give it physical thickness. */
+  .panel {
+    position: relative;
+    background-color: hsl(var(--panel));
+    border: 1px solid hsl(var(--border));
+    box-shadow:
+      inset 0 1px 0 0 hsl(210 60% 90% / 0.04),
+      inset 0 -1px 0 0 hsl(0 0% 0% / 0.45),
+      0 1px 2px 0 hsl(0 0% 0% / 0.55);
+  }
+
+  .panel-raised {
+    background-color: hsl(var(--panel-raised));
+    border: 1px solid hsl(var(--border-bright));
+    box-shadow:
+      inset 0 1px 0 0 hsl(210 70% 90% / 0.055),
+      0 2px 8px -2px hsl(0 0% 0% / 0.65);
+  }
+
+  .panel-sunk {
+    background-color: hsl(var(--surface-sunk));
+    border: 1px solid hsl(var(--border));
+    box-shadow: inset 0 2px 6px -2px hsl(0 0% 0% / 0.85);
+  }
+
+  /* Corner bezel ticks — the "machined plate" cue. Restrained: 7px marks. */
+  .bezel::before,
+  .bezel::after {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+  .bezel::before {
+    top: -1px;
+    left: -1px;
+    border-top: 1px solid hsl(var(--accent));
+    border-left: 1px solid hsl(var(--accent));
+  }
+  .bezel::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 1px solid hsl(var(--accent));
+    border-right: 1px solid hsl(var(--accent));
+  }
+
+  /* Notched corner — an unusual silhouette without leaving the rectangle. */
+  .notch {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 11px) 0,
+      100% 11px,
+      100% 100%,
+      0 100%
+    );
+  }
+
+  /* ------------------------------- motifs --------------------------------- */
+  .grid-radar {
+    background-image:
+      linear-gradient(hsl(var(--grid)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--grid)) 1px, transparent 1px);
+    background-size: 59px 59px;
+  }
+
+  .grid-fine {
+    background-image:
+      linear-gradient(hsl(var(--grid) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--grid) / 0.5) 1px, transparent 1px);
+    background-size: 14px 14px;
+  }
+
+  /* Very low-opacity horizontal scanlines — CRT/phosphor nod. Reserved for
+     one or two hero surfaces; never applied globally. */
+  .scanline {
+    background-image: repeating-linear-gradient(
+      0deg,
+      hsl(189 80% 70% / 0.05) 0px,
+      hsl(189 80% 70% / 0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: screen;
+  }
+
+  /* Thin signal trace — a hairline that fades at both ends. */
+  .trace-x {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--trace)) 15%,
+      hsl(var(--trace)) 85%,
+      transparent
+    );
+  }
+
+  .trace-y {
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      hsl(var(--trace)) 12%,
+      hsl(var(--trace)) 88%,
+      transparent
+    );
+  }
+
+  /* Perforated tick strip, like a plotter margin. */
+  .tick {
+    background-image: repeating-linear-gradient(
+      90deg,
+      hsl(var(--border-bright)) 0 1px,
+      transparent 1px 7px
+    );
+  }
+
+  .hairline {
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  /* -------------------------------- LEDs ---------------------------------- */
+  /* Status lights with a real bloom. Small enough to stay instrument-like. */
+  .led {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+    background: hsl(var(--muted-foreground));
+    box-shadow: 0 0 0 1px hsl(0 0% 0% / 0.6);
+  }
+  .led-ok {
+    background: hsl(var(--ok));
+    box-shadow:
+      0 0 0 1px hsl(0 0% 0% / 0.6),
+      0 0 6px 0 hsl(var(--ok) / 0.75);
+  }
+  .led-warn {
+    background: hsl(var(--sev-watch));
+    box-shadow:
+      0 0 0 1px hsl(0 0% 0% / 0.6),
+      0 0 6px 0 hsl(var(--sev-watch) / 0.75);
+  }
+  .led-hot {
+    background: hsl(var(--sev-high));
+    box-shadow:
+      0 0 0 1px hsl(0 0% 0% / 0.6),
+      0 0 9px 0 hsl(var(--sev-high) / 0.9);
+  }
+  .led-cold {
+    background: hsl(var(--sev-info));
+    box-shadow:
+      0 0 0 1px hsl(0 0% 0% / 0.6),
+      0 0 6px 0 hsl(var(--sev-info) / 0.7);
+  }
+  .led-live {
+    background: hsl(var(--live));
+    box-shadow:
+      0 0 0 1px hsl(0 0% 0% / 0.6),
+      0 0 7px 0 hsl(var(--live) / 0.8);
+  }
+  .led-off {
+    background: hsl(222 20% 22%);
+    box-shadow: inset 0 0 0 1px hsl(0 0% 0% / 0.5);
+  }
+
+  /* ------------------------------ scanning -------------------------------- */
+  /* A sweep line travelling across a surface — the station is looking. */
+  .sweep {
+    position: relative;
+    overflow: hidden;
+  }
+  .sweep::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--live) / 0.1) 45%,
+      hsl(var(--live) / 0.18) 50%,
+      hsl(var(--live) / 0.1) 55%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: s59-sweep 4.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  /* Compact activity bars — data being actively observed. */
+  .waveform {
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    height: 12px;
+  }
+  .waveform > i {
+    display: block;
+    width: 2px;
+    background: hsl(var(--live) / 0.8);
+    animation: s59-wave 1.4s ease-in-out infinite;
+  }
+}
+
+/* ------------------------------ animation --------------------------------- */
+
+@keyframes s59-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes s59-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.28;
+  }
+}
+
+@keyframes s59-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow:
+      0 0 0 1px hsl(0 0% 0% / 0.6),
+      0 0 9px 0 hsl(var(--sev-high) / 0.9);
+  }
+  50% {
+    opacity: 0.65;
+    box-shadow:
+      0 0 0 1px hsl(0 0% 0% / 0.6),
+      0 0 2px 0 hsl(var(--sev-high) / 0.4);
+  }
+}
+
+@keyframes s59-wave {
+  0%,
+  100% {
+    height: 20%;
+  }
+  50% {
+    height: 100%;
+  }
+}
+
+@keyframes s59-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes s59-rail {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.live-dot {
+  animation: s59-pulse 1.9s ease-in-out infinite;
+}
+
+.breathe {
+  animation: s59-breathe 2.4s ease-in-out infinite;
+}
+
+.enter {
+  animation: s59-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot,
+  .breathe,
+  .enter,
+  .sweep::after,
+  .waveform > i {
+    animation: none !important;
+  }
+}
+
+/* --------------------- wallet adapter, themed to station ------------------ */
+
+.wallet-adapter-button,
+.wallet-adapter-button-trigger {
+  background-color: hsl(var(--panel-raised)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border-bright)) !important;
+  font-family: var(--font-display) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+  height: 34px !important;
+  line-height: 32px !important;
+  border-radius: var(--radius) !important;
+  padding: 0 14px !important;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wallet-adapter-button:not([disabled]):hover {
+  background-color: hsl(var(--accent)) !important;
+  border-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+.wallet-adapter-modal-wrapper {
+  font-family: var(--font-body);
+  background: hsl(var(--panel)) !important;
+  border: 1px solid hsl(var(--border-bright)) !important;
+  border-radius: var(--radius) !important;
+}
+
+.wallet-adapter-modal-title {
+  font-family: var(--font-display);
+  color: hsl(var(--foreground)) !important;
+  font-size: 16px !important;
+}
+
+.wallet-adapter-modal-list li button {
+  background: hsl(var(--panel-raised)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+}
