@@ -181,8 +181,7 @@ No private credentials are committed to this repository.
 
 ## Ownership and license
 
-StockGap is owned by **Modulo 59**. Project B59 is the historical research and
-archive division and is not the owner of this software.
+StockGap is owned by **Modulo 59**.
 
 Copyright (c) 2026 Modulo 59. All rights reserved. This repository is available
 for viewing and evaluation only. See [LICENSE](./LICENSE) for the complete terms.
