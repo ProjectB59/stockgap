@@ -177,3 +177,12 @@ No private credentials are committed to this repository.
 - Wrapper tokens may have very different liquidity. StockGap displays liquidity and warnings rather than hiding this.
 - Source prices can be delayed, stale, thin or temporarily unavailable.
 - This project is experimental market intelligence, not financial advice.
+
+
+## Ownership and license
+
+StockGap is owned by **Modulo 59**. Project B59 is the historical research and
+archive division and is not the owner of this software.
+
+Copyright (c) 2026 Modulo 59. All rights reserved. This repository is available
+for viewing and evaluation only. See [LICENSE](./LICENSE) for the complete terms.
